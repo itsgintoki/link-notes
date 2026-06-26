@@ -7,8 +7,8 @@ export const notesTable = pgTable('notes_table', {
     id: uuid("id").primaryKey().defaultRandom(),
 
     user_id: uuid("user_id")
-        .notNull()
         .references(() => UsersTable.id, { onDelete: "cascade" }),
+
 
     title: varchar("title", { length: 255 }).notNull(),
 
