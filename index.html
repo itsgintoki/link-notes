@@ -938,6 +938,12 @@ async function loadNotes(search = '') {
   renderNotesList();
 }
 
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+
 function renderNotesList() {
   const list = document.getElementById('notes-list');
   if (notes.length === 0) {
@@ -945,11 +951,11 @@ function renderNotesList() {
     return;
   }
   list.innerHTML = notes.map(n => `
-    <div class="note-item ${n.id === currentNoteId ? 'active' : ''}" onclick="openNote('${n.id}')">
-      <div class="note-item-title">${n.title}</div>
+    <div class="note-item ${n.id === currentNoteId ? 'active' : ''}" onclick="openNote('${esc(n.id)}')">
+      <div class="note-item-title">${esc(n.title)}</div>
       <div class="note-item-meta">
         <div class="note-item-date">${new Date(n.created_at).toLocaleDateString('en', {month:'short',day:'numeric'})}</div>
-        <div class="note-item-clicks">↗ ${n.clicks}</div>
+        <div class="note-item-clicks">↗ ${esc(n.clicks)}</div>
       </div>
     </div>
   `).join('');
@@ -981,9 +987,9 @@ function renderAttachments(attachments) {
   }
   grid.innerHTML = attachments.map(a => `
     <div class="attachment-item">
-      <a href="${a.cloudinaryUrl}" target="_blank">${a.originalName}</a>
+      <a href="${esc(a.cloudinaryUrl)}" target="_blank">${esc(a.originalName)}</a>
       <span style="color:#bbb;font-size:10px;">${(a.size/1024).toFixed(0)}kb</span>
-      <button class="attachment-delete" onclick="deleteAttachment('${a.id}')" title="Delete">×</button>
+      <button class="attachment-delete" onclick="deleteAttachment('${esc(a.id)}')" title="Delete">×</button>
     </div>
   `).join('');
 }

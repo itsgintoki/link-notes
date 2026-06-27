@@ -124,8 +124,17 @@ export const refresh = async (req, res, next) => {
       return next({ status: 401, message: "Refresh token expired" });
     }
 
+    const user = await db
+      .select({ role: UsersTable.role })
+      .from(UsersTable)
+      .where(eq(UsersTable.id, decoded.id));
+
+    if (user.length === 0) {
+      return next({ status: 401, message: "User not found" });
+    }
+
     const accessToken = jwt.sign(
-      { id: decoded.id, role: stored[0].role },
+      { id: decoded.id, role: user[0].role },
       process.env.JWT_SECRET,
       { expiresIn: "15m" }
     );
@@ -142,7 +151,10 @@ export const logout = async (req, res, next) => {
 
     await db
       .delete(refreshTokensTable)
-      .where(eq(refreshTokensTable.token, refreshToken));
+      .where(and(
+        eq(refreshTokensTable.token, refreshToken),
+        eq(refreshTokensTable.userId, req.user.id)
+      ));
 
     res.status(200).json({ success: true, message: "Logged out" });
   } catch (err) {

@@ -65,64 +65,71 @@ export const getNoteById = async (req, res, next) => {
 };
 
 export const updateNote = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const { title, body } = req.body;
+  try {
+    const { id } = req.params;
+    const { title, body } = req.body;
 
-        const result = await db
-            .update(notesTable)
-            .set({ title, body })
-            .where(and(eq(notesTable.id, id), eq(notesTable.user_id, req.user.id)))
+    const result = await db
+      .update(notesTable)
+      .set({ title, body })
+      .where(and(eq(notesTable.id, id), eq(notesTable.user_id, req.user.id)))
+      .returning();
 
-
-        if (result.length === 0) {
-            return next({ status: 404, message: "Note Not found!" });
-        }
-        return res.status(200).json({ success: true, note: result[0] });
-
-    } catch (err) {
-        next(err);
+    if (result.length === 0) {
+      return next({ status: 404, message: "Note not found" });
     }
-}
+
+    return res.status(200).json({ success: true, note: result[0] });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const deleteNote = async (req, res, next) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        const result = await db
-            .delete(notesTable)
-            .where(and(eq(notesTable.id, id), eq(notesTable.user_id, req.user.id)))
+    const result = await db
+      .delete(notesTable)
+      .where(and(eq(notesTable.id, id), eq(notesTable.user_id, req.user.id)))
+      .returning();
 
-        if (result.length === 0) {
-            return next({ status: 404, message: "Note not found" });
-        }
-
-        res.status(200).json({ success: true, message: "Note deleted" });
-    } catch (err) {
-        next(err);
+    if (result.length === 0) {
+      return next({ status: 404, message: "Note not found" });
     }
+
+    res.status(200).json({ success: true, message: "Note deleted" });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const getNoteByCode = async (req, res, next) => {
-    try {
-        const { code } = req.params;
+  try {
+    const { code } = req.params;
 
-        const result = await db
-            .select()
-            .from(notesTable)
-            .where(eq(notesTable.short_code, code));
+    const result = await db
+      .select({
+        title: notesTable.title,
+        body: notesTable.body,
+        clicks: notesTable.clicks,
+        short_code: notesTable.short_code,
+        created_at: notesTable.created_at,
+      })
+      .from(notesTable)
+      .where(eq(notesTable.short_code, code));
 
-        if (result.length === 0) {
-            return next({ status: 404, message: "Invalid link" });
-        }
-
-        await db
-            .update(notesTable)
-            .set({ clicks: result[0].clicks + 1 })
-            .where(eq(notesTable.short_code, code));
-
-        res.status(200).json({ success: true, note: result[0] });
-    } catch (err) {
-        next(err);
+    if (result.length === 0) {
+      return next({ status: 404, message: "Invalid link" });
     }
+
+    await db
+      .update(notesTable)
+      .set({ clicks: sql`${notesTable.clicks} + 1` }) 
+      .where(eq(notesTable.short_code, code));
+
+    res.status(200).json({ success: true, note: result[0] });
+  } catch (err) {
+    next(err);
+  }
 };
