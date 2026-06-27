@@ -100,3 +100,64 @@ export const getMe = async (req, res, next) => {
     next(err);
   }
 };
+
+
+export const refresh = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return next({ status: 400, message: "Refresh token required" });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+
+    const stored = await db
+      .select()
+      .from(refreshTokensTable)
+      .where(eq(refreshTokensTable.token, refreshToken));
+
+    if (stored.length === 0) {
+      return next({ status: 401, message: "Invalid refresh token" });
+    }
+
+    if (stored[0].expiresAt < new Date()) {
+      return next({ status: 401, message: "Refresh token expired" });
+    }
+
+    const accessToken = jwt.sign(
+      { id: decoded.id, role: stored[0].role },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.status(200).json({ success: true, accessToken });
+  } catch (err) {
+    next({ status: 401, message: "Invalid refresh token" });
+  }
+};
+
+export const logout = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+
+    await db
+      .delete(refreshTokensTable)
+      .where(eq(refreshTokensTable.token, refreshToken));
+
+    res.status(200).json({ success: true, message: "Logged out" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const logoutAll = async (req, res, next) => {
+  try {
+    await db
+      .delete(refreshTokensTable)
+      .where(eq(refreshTokensTable.userId, req.user.id));
+
+    res.status(200).json({ success: true, message: "Logged out from all devices" });
+  } catch (err) {
+    next(err);
+  }
+};
