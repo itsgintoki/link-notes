@@ -102,4 +102,3 @@ An authenticated note-taking API where every note gets a shareable short link an
 
 **Short code generated at creation** — generating it on first share would risk collisions if two requests hit simultaneously. Generating it at creation keeps it simple and ensures the code is always there, no conditional logic needed.
 
-**Single project over four separate ones** — the original roadmap had four disconnected projects. Merging them into one means auth, validation, and error handling are built once and reused everywhere instead of re-implemented from scratch each time.
