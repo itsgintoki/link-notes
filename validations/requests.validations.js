@@ -15,7 +15,7 @@ export const loginBodySchema = z.object({
 
 export const createNoteSchema = z.object({
   title: z.string().min(1, "Title is required").max(255),
-  body: z.string().min(1, "Body is required"),
+  body: z.string().min(1, "Body is required").max(50000),
 });
 
 export const registerSchema = z.object({

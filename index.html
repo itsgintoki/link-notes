@@ -1083,7 +1083,7 @@ async function deleteNote() {
 
 function copyShortLink() {
   const code = document.getElementById('share-code').textContent;
-  navigator.clipboard.writeText(`localhost:8000${code}`);
+  navigator.clipboard.writeText(`${API}${code}`);
   toast('Short link copied');
 }
 
