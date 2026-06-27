@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import { ilike, eq, and } from "drizzle-orm";
 import db from "../db/index.js";
 import { notesTable } from "../models/notes.model.js";
+import { attachmentsTable } from "../models/attachments.model.js";
 
 export const createNote = async (req, res, next) => {
     try {
@@ -40,22 +41,27 @@ export const getNotes = async (req, res, next) => {
 };
 
 export const getNoteById = async (req, res, next) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        const result = await db
-            .select()
-            .from(notesTable)
-            .where(and(eq(notesTable.id, id), eq(notesTable.user_id, req.user.id)))
+    const note = await db
+      .select()
+      .from(notesTable)
+      .where(and(eq(notesTable.id, id), eq(notesTable.user_id, req.user.id)));
 
-        if (result.length === 0) {
-            return next({ status: 404, message: "Note not found" });
-        }
-
-        res.status(200).json({ success: true, note: result[0] });
-    } catch (err) {
-        next(err);
+    if (note.length === 0) {
+      return next({ status: 404, message: "Note not found" });
     }
+
+    const attachments = await db
+      .select()
+      .from(attachmentsTable)
+      .where(eq(attachmentsTable.noteId, id));
+
+    res.status(200).json({ success: true, note: { ...note[0], attachments } });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const updateNote = async (req, res, next) => {

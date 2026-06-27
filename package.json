@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "node --watch index",
     "db:push": "drizzle-kit push",
@@ -13,10 +14,16 @@
   "license": "ISC",
   "dependencies": {
     "argon2": "^0.44.0",
+    "cloudinary": "^2.10.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
+    "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "multer": "^2.2.0",
+    "multer-storage-cloudinary": "^2.2.1",
     "nanoid": "^5.1.16",
     "pg": "^8.22.0",
     "zod": "^4.4.3"
