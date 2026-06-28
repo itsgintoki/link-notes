@@ -24,7 +24,7 @@ app.use(helmet({
   contentSecurityPolicy: false,
 }));
 app.use(cors({
-  origin: ['http://localhost:8000', 'http://127.0.0.1:5500'],
+  origin: ['http://localhost:8000', 'http://127.0.0.1:5500','postgresql://postgres:ThsKbQekmxyUtstOXCdGGiGvbZYCyFue@reseau.proxy.rlwy.net:37445/railway'],
   credentials: true
 }));
 
