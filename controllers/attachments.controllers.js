@@ -49,7 +49,14 @@ export const getAttachments = async (req, res, next) => {
     }
 
     const result = await db
-      .select()
+      .select({
+        id: attachmentsTable.id,
+        originalName: attachmentsTable.originalName,
+        cloudinaryUrl: attachmentsTable.cloudinaryUrl,
+        mimetype: attachmentsTable.mimetype,
+        size: attachmentsTable.size,
+        createdAt: attachmentsTable.createdAt,
+      })
       .from(attachmentsTable)
       .where(eq(attachmentsTable.noteId, id));
 
@@ -75,7 +82,7 @@ export const deleteAttachment = async (req, res, next) => {
     const attachment = await db
       .select()
       .from(attachmentsTable)
-      .where(eq(attachmentsTable.id, attachmentId));
+      .where(eq(attachmentsTable.id, attachmentId),eq(attachmentsTable.noteId,id));
 
     if (attachment.length === 0) {
       return next({ status: 404, message: "Attachment not found" });

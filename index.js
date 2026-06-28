@@ -9,6 +9,7 @@ import notesRouter from './routes/notes.routes.js';
 import { getNoteByCode } from './controllers/notes.controllers.js';
 import authRouter from './routes/auth.routes.js';
 import attachmentsRouter from './routes/attachments.routes.js';
+import { shortLinkLimiter } from './middlewares/rateLimiter.middlewares.js';
 import { errorHandler } from './middlewares/errorHandler.middlewares.js';
 
 const app = express();
@@ -19,12 +20,12 @@ app.use(cors({
   origin: ['http://localhost:8000', 'http://127.0.0.1:5500'],
   credentials: true
 }));
-app.use(morgan('dev')); 
-app.use(express.json());
+
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
 app.use('/notes', notesRouter);
-app.get('/n/:code', getNoteByCode);
+app.get("/n/:code", shortLinkLimiter, getNoteByCode);
 app.use('/notes/:id/attachments', attachmentsRouter);
 app.use('/auth', authRouter);
 
