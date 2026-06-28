@@ -214,7 +214,6 @@ export const getNoteByCode = async (req, res, next) => {
             return `
               <div class="shared-image-container">
                 <img src="${url}" alt="${name}" />
-                <div class="shared-image-caption">${name}</div>
               </div>
             `;
           })
@@ -226,29 +225,38 @@ export const getNoteByCode = async (req, res, next) => {
         `;
       }
 
-      const items = attachments
-        .map((a) => {
-          const name = escapeHtml(a.originalName);
-          const url = escapeHtml(a.cloudinaryUrl);
-          const size = (a.size / 1024).toFixed(0);
-          return `
-            <div class="attachment-item">
-              <a href="${url}" target="_blank" rel="noopener noreferrer">${name}</a>
-              <span class="attachment-size">${size}KB</span>
-            </div>
-          `;
-        })
-        .join("");
+      const nonImageAttachments = attachments.filter(
+        (a) => !a.mimetype || !a.mimetype.startsWith("image/")
+      );
+      if (nonImageAttachments.length > 0) {
+        const items = nonImageAttachments
+          .map((a) => {
+            const name = escapeHtml(a.originalName);
+            const url = escapeHtml(a.cloudinaryUrl);
+            const size = (a.size / 1024).toFixed(0);
+            return `
+              <div class="attachment-item">
+                <a href="${url}" target="_blank" rel="noopener noreferrer">${name}</a>
+                <span class="attachment-size">${size}KB</span>
+              </div>
+            `;
+          })
+          .join("");
 
-      attachmentsHtml = `
-        <div class="attachments-section">
-          <div class="attachments-title">/ attachments</div>
-          <div class="attachments-list">
-            ${items}
+        attachmentsHtml = `
+          <div class="attachments-section">
+            <div class="attachments-title">/ attachments</div>
+            <div class="attachments-list">
+              ${items}
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
     }
+
+    const words = note.body.trim() ? note.body.trim().split(/\s+/).length : 0;
+    const minutes = Math.ceil(words / 200);
+    const readTimeStr = `${words} words · ${minutes} min read`;
 
     res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -289,7 +297,6 @@ export const getNoteByCode = async (req, res, next) => {
     .shared-images { margin-top: 40px; display: flex; flex-direction: column; gap: 24px; }
     .shared-image-container { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: var(--attachment-bg); }
     .shared-image-container img { width: 100%; height: auto; display: block; max-height: 600px; object-fit: contain; background: #000; margin: 0 auto; }
-    .shared-image-caption { padding: 10px 16px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--meta); border-top: 1px solid var(--border); background: var(--attachment-bg); }
 
     /* Attachments styling */
     .attachments-section { margin-top: 50px; border-top: 1px dashed var(--border); padding-top: 24px; }
@@ -303,7 +310,7 @@ export const getNoteByCode = async (req, res, next) => {
 </head>
 <body>
   <h1>${escapedTitle}</h1>
-  <div class="meta">shared via linknotes · ${new Date(note.created_at).toLocaleDateString('en', { year: 'numeric', month: 'long', day: 'numeric' })} · ${note.clicks + 1} views</div>
+  <div class="meta">shared via linknotes · ${new Date(note.created_at).toLocaleDateString('en', { year: 'numeric', month: 'long', day: 'numeric' })} · ${note.clicks + 1} views · ${readTimeStr}</div>
   <div class="body">${escapedBody}</div>
   ${inlineImagesHtml}
   ${attachmentsHtml}
