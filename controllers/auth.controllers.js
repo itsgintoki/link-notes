@@ -1,7 +1,7 @@
 import argon2 from "argon2";
 import db from "../db/index.js";
 import { UsersTable } from "../models/user.model.js";
-import { eq } from "drizzle-orm";
+import { eq,and } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import { refreshTokensTable } from "../models/tokens.model.js";
 
@@ -10,7 +10,7 @@ export const register = async (req, res, next) => {
     const { firstName, lastName, email, password } = req.body;
 
     const existing = await db
-      .select()
+      .select({ id: UsersTable.id })
       .from(UsersTable)
       .where(eq(UsersTable.email, email));
 
@@ -38,7 +38,11 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     const result = await db
-      .select()
+      .select({
+        id: UsersTable.id,
+        role: UsersTable.role,
+        passwordHash: UsersTable.passwordHash,
+      })
       .from(UsersTable)
       .where(eq(UsersTable.email, email));
 
@@ -138,6 +142,15 @@ export const refresh = async (req, res, next) => {
       process.env.JWT_SECRET,
       { expiresIn: "15m" }
     );
+
+    await db
+      .delete(refreshTokensTable)
+      .where(
+        and(
+          eq(refreshTokensTable.userId, decoded.id),
+          sql`${refreshTokensTable.expiresAt} < now()`
+        )
+      );
 
     res.status(200).json({ success: true, accessToken });
   } catch (err) {

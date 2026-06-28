@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { ilike, eq, and } from "drizzle-orm";
+import { ilike, eq, and,sql } from "drizzle-orm";
 import db from "../db/index.js";
 import { notesTable } from "../models/notes.model.js";
 import { attachmentsTable } from "../models/attachments.model.js";

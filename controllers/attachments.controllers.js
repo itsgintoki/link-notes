@@ -27,7 +27,14 @@ export const uploadAttachment = async (req, res, next) => {
       publicId: cloudinaryResult.public_id,
       mimetype: req.file.mimetype,
       size: req.file.size,
-    }).returning();
+    }).returning({
+      id: attachmentsTable.id,
+      originalName: attachmentsTable.originalName,
+      cloudinaryUrl: attachmentsTable.cloudinaryUrl,
+      mimetype: attachmentsTable.mimetype,
+      size: attachmentsTable.size,
+      createdAt: attachmentsTable.createdAt,
+    });
 
     res.status(201).json({ success: true, attachment: result[0] });
   } catch (err) {
@@ -82,7 +89,7 @@ export const deleteAttachment = async (req, res, next) => {
     const attachment = await db
       .select()
       .from(attachmentsTable)
-      .where(eq(attachmentsTable.id, attachmentId),eq(attachmentsTable.noteId,id));
+      .where(and(eq(attachmentsTable.id, attachmentId), eq(attachmentsTable.noteId, id)));
 
     if (attachment.length === 0) {
       return next({ status: 404, message: "Attachment not found" });

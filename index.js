@@ -21,7 +21,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));app.use(express.json());
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 
 app.use('/notes', notesRouter);
@@ -43,3 +44,4 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server is listening on PORT ${PORT}`);
 });
+
