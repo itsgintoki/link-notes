@@ -1,4 +1,4 @@
-import { pgTable, uuid, timestamp, varchar, text, integer } from "drizzle-orm/pg-core";
+import { pgTable, uuid, timestamp, varchar, text, integer,boolean } from "drizzle-orm/pg-core";
 import { UsersTable } from "./user.model.js";
 
 // notes — id, user_id, title, body, short_code, clicks, created_at, updated_at
@@ -30,4 +30,5 @@ export const notesTable = pgTable('notes_table', {
         .defaultNow()
         .notNull()
         .$onUpdateFn(() => new Date()),
+    is_pinned: boolean("is_pinned").default(false).notNull(),
 });

@@ -1,7 +1,7 @@
 import argon2 from "argon2";
 import db from "../db/index.js";
 import { UsersTable } from "../models/user.model.js";
-import { eq,and } from "drizzle-orm";
+import { eq,and,sql } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import { refreshTokensTable } from "../models/tokens.model.js";
 
