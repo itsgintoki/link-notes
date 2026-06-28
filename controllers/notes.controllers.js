@@ -200,8 +200,32 @@ export const getNoteByCode = async (req, res, next) => {
     const escapedBody = escapeHtml(note.body);
     const escapedShortCode = escapeHtml(note.short_code);
 
+    let inlineImagesHtml = "";
     let attachmentsHtml = "";
     if (attachments && attachments.length > 0) {
+      const imageAttachments = attachments.filter(
+        (a) => a.mimetype && a.mimetype.startsWith("image/")
+      );
+      if (imageAttachments.length > 0) {
+        const imgs = imageAttachments
+          .map((a) => {
+            const url = escapeHtml(a.cloudinaryUrl);
+            const name = escapeHtml(a.originalName);
+            return `
+              <div class="shared-image-container">
+                <img src="${url}" alt="${name}" />
+                <div class="shared-image-caption">${name}</div>
+              </div>
+            `;
+          })
+          .join("");
+        inlineImagesHtml = `
+          <div class="shared-images">
+            ${imgs}
+          </div>
+        `;
+      }
+
       const items = attachments
         .map((a) => {
           const name = escapeHtml(a.originalName);
@@ -261,6 +285,12 @@ export const getNoteByCode = async (req, res, next) => {
     .body { font-size: 16px; white-space: pre-wrap; }
     .footer { margin-top: 60px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--meta); border-top: 1px solid var(--border); padding-top: 16px; text-transform: uppercase; }
     
+    /* Inline images */
+    .shared-images { margin-top: 40px; display: flex; flex-direction: column; gap: 24px; }
+    .shared-image-container { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: var(--attachment-bg); }
+    .shared-image-container img { width: 100%; height: auto; display: block; max-height: 600px; object-fit: contain; background: #000; margin: 0 auto; }
+    .shared-image-caption { padding: 10px 16px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--meta); border-top: 1px solid var(--border); background: var(--attachment-bg); }
+
     /* Attachments styling */
     .attachments-section { margin-top: 50px; border-top: 1px dashed var(--border); padding-top: 24px; }
     .attachments-title { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 16px; }
@@ -275,6 +305,7 @@ export const getNoteByCode = async (req, res, next) => {
   <h1>${escapedTitle}</h1>
   <div class="meta">shared via linknotes · ${new Date(note.created_at).toLocaleDateString('en', { year: 'numeric', month: 'long', day: 'numeric' })} · ${note.clicks + 1} views</div>
   <div class="body">${escapedBody}</div>
+  ${inlineImagesHtml}
   ${attachmentsHtml}
   <div class="footer">/ LINKNOTES · /n/${escapedShortCode}</div>
 </body>
